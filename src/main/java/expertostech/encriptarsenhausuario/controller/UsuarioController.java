@@ -1,6 +1,9 @@
 package expertostech.encriptarsenhausuario.controller;
 
-import expertostech.encriptarsenhausuario.model.UsuarioModel;
+import expertostech.encriptarsenhausuario.dto.UsuarioRequestDTO;
+import expertostech.encriptarsenhausuario.dto.UsuarioResponseDTO;
+import expertostech.encriptarsenhausuario.entity.UsuarioEntity;
+import expertostech.encriptarsenhausuario.mapper.UsuarioMapper;
 import expertostech.encriptarsenhausuario.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,38 +19,47 @@ public class UsuarioController {
 
     private final UsuarioRepository repository;
     private final PasswordEncoder encoder;
+    private final UsuarioMapper mapper;
 
-    public UsuarioController(UsuarioRepository repository, PasswordEncoder encoder) {
+    public UsuarioController(UsuarioRepository repository, PasswordEncoder encoder, UsuarioMapper mapper) {
         this.repository = repository;
         this.encoder = encoder;
+        this.mapper = mapper;
     }
 
     @GetMapping("/listarTodos")
-    public ResponseEntity<List<UsuarioModel>> listarTodos() {
+    public ResponseEntity<List<UsuarioEntity>> listarTodos() {
         return ResponseEntity.ok(repository.findAll());
 
     }
 
     @PostMapping("/salvar")
-    public ResponseEntity<UsuarioModel> salvar(@RequestBody UsuarioModel usuarioModel) {
-        usuarioModel.setPassword(encoder.encode(usuarioModel.getPassword()));
-        return ResponseEntity.ok(repository.save(usuarioModel));
+    public ResponseEntity<UsuarioResponseDTO> salvar(@RequestBody UsuarioRequestDTO usuarioRequestDTO) {
+        usuarioRequestDTO.setPassword(encoder.encode(usuarioRequestDTO.getPassword()));
+
+        var usuarioEntity = mapper.usuarioRequestDTOtoUsuarioEntity(usuarioRequestDTO);
+
+        var resource = repository.save(usuarioEntity);
+
+        var usuarioResponseDto = mapper.usuarioEntityToUsuarioResponseDto(resource);
+
+        return ResponseEntity.ok(usuarioResponseDto);
     }
 
     @GetMapping("/validarSenha")
     public ResponseEntity<Boolean> validarSenha(@RequestParam String login,
                                                 @RequestParam String password) {
 
-        Optional<UsuarioModel> optUsuario = repository.findByLogin(login);
-        if(optUsuario.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
+        Optional<UsuarioEntity> optUsuario = repository.findByLogin(login);
+//        if(optUsuario.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+//        }
 
-        boolean valid = encoder.matches(password, optUsuario.get().getPassword());
+//        boolean valid = encoder.matches(password, optUsuario.get().getPassword());
 
-        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+//        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
 
-        return ResponseEntity.status(status).body(valid);
+        return null;
 
     }
 }

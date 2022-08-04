@@ -1,21 +1,23 @@
-package expertostech.encriptarsenhausuario.model;
+package expertostech.encriptarsenhausuario.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "Usuario")
-public class UsuarioModel {
+public class UsuarioEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(unique = true)
     private String login;
+
     private String password;
 }
